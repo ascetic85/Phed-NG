@@ -20,8 +20,8 @@ class Body : public Object
     Q_PROPERTY(qreal    inertia             READ inertia            STORED false);
     Q_PROPERTY(bool     isStatic            READ isStatic           STORED false);
     Q_PROPERTY(bool     isBreakable         READ isBreakable        STORED false);
-    Q_PROPERTY(Point  position            READ position           WRITE setPosition);
-    Q_PROPERTY(Point  linearVelocity      READ linearVelocity     WRITE setLinearVelocity);
+    Q_PROPERTY(QPointF  position            READ position           WRITE setPosition);
+    Q_PROPERTY(QPointF  linearVelocity      READ linearVelocity     WRITE setLinearVelocity);
     Q_PROPERTY(qreal    angle               READ angle              WRITE setAngle);
     Q_PROPERTY(qreal    angularVelocity     READ angularVelocity    WRITE setAngularVelocity);
     Q_PROPERTY(qreal    linearDamping       READ linearDamping      WRITE setLinearDamping);

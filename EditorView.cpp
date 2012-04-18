@@ -210,7 +210,7 @@ void EditorView::closePoly()
 
     QSet<Body*> qobjs;
     qobjs.insert(body);
-//    m_world->setSelectedObjects(qobjs);
+    m_world->setSelectedObjects(qobjs);
 }
 
 void EditorView::showGrid(bool flag)
