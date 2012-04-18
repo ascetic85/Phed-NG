@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RCC version="1.0">
+    <qresource>
+        <file>icons/silk/page_white.png</file>
+        <file>icons/silk/folder_page_white.png</file>
+        <file>icons/silk/disk.png</file>
+        <file>icons/custom/media-playback-start.png</file>
+        <file>icons/custom/media-playback-pause.png</file>
+        <file>icons/custom/ellipse.png</file>
+        <file>icons/custom/line.png</file>
+        <file>icons/custom/polygon.png</file>
+        <file>icons/custom/rectangle.png</file>
+        <file>icons/custom/select.png</file>
+    </qresource>
+</RCC>
