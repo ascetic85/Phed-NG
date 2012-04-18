@@ -36,6 +36,7 @@ class Body : public Object
     Q_PROPERTY(bool     isSensor            READ isSensor           WRITE setSensor);
     Q_PROPERTY(QColor   color               READ color              WRITE setColor);
     Q_PROPERTY(PolygonList polygons         READ polygons           WRITE setPolygons           DESIGNABLE false);
+    Q_PROPERTY(int      type                READ type               WRITE setType);
 
     friend class World;
 public:
@@ -62,6 +63,7 @@ public:
     qreal breakingPoint() const;
     bool isBreakable() const;
     QList<BPolygon> polygons() const;
+    int type() const;
 
     // write
     void setPosition(const Point &pos);
@@ -81,6 +83,7 @@ public:
     void setBreakingPoint(qreal bp);
     void setPolygons(const QList<BPolygon> &polygons);
     void clearFixtures();
+    void setType(int);
 
     // misc
     void paintGL() const;

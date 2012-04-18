@@ -113,6 +113,11 @@ QList<BPolygon> Body::polygons() const
     return m_polygons;
 }
 
+int Body::type() const
+{
+    return m_bodyDef.type;
+}
+
 Point Body::linearVelocity() const
 {
     if(m_body) return m_body->GetLinearVelocity();
@@ -363,4 +368,19 @@ void Body::paintGL() const
     }
 
     glPopMatrix();
+}
+
+void Body::setType(int type)
+{
+    if ((type == b2_dynamicBody)
+            ||(type == b2_staticBody)
+            ||(type == b2_kinematicBody)) {
+        if (m_body) {
+            m_body->SetType((b2BodyType) type);
+        }
+        else {
+            m_bodyDef.type = (b2BodyType) type;
+        }
+//        emit propertyChanged();
+    }
 }
