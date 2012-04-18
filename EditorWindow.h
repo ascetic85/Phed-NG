@@ -1,6 +1,14 @@
 /*
+ * 
+ * File:   EditorWindow.h
+ * Author: mark
+ * 
+ * Created on August 19, 2009, 7:10 PM
+ *
+ *
  * Copyright (c) 2012 ascetic85 
  */
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 

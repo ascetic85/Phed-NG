@@ -1,4 +1,11 @@
 /*
+ *
+ * File:   point.h
+ * Author: mark
+ *
+ * Created on August 19, 2009, 7:10 PM
+ *
+ *
  * Copyright (c) 2012 ascetic85
  */
 #include "point.h"
