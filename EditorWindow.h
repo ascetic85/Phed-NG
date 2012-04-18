@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2012 ascetic85 
+ */
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -18,7 +21,8 @@ public:
     EditorWindow(QWidget *parent = 0);
     ~EditorWindow();
 
-
+protected:
+    void closeEvent(QCloseEvent *event);
 
 private slots:
     void newFile();
@@ -31,12 +35,18 @@ private slots:
     void toolSelected(QAction*);
     void toggleSimState();
 
+    void mousePosChanged(const QPointF &);
+
 private:
     void createWorld();
     void createDockWindows();
     void createActions();
     void createMenus();
     void createToolBars();
+    void createStatusBar();
+
+    void readSettings();
+    void writeSettings();
 
 private:
     QMenu *m_fileMenu;

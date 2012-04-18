@@ -1,0 +1,9 @@
+b2ChainAndCircleContact.h
+b2ChainAndPolygonContact.h
+b2CircleContact.h
+b2Contact.h
+b2ContactSolver.h
+b2EdgeAndCircleContact.h
+b2EdgeAndPolygonContact.h
+b2PolygonAndCircleContact.h
+b2PolygonContact.h

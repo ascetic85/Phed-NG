@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2012 ascetic85 
+ */
 #include <QtGui/QApplication>
 #include <QDateTime>
 #include "EditorWindow.h"

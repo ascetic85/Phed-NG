@@ -1,7 +1,13 @@
+/*
+ * Copyright (c) 2012 ascetic85 
+ */
 #include "EditorWindow.h"
 
+#include <QStatusBar>
 #include <QDockWidget>
 #include <QStyle>
+#include <QCloseEvent>
+#include <QSettings>
 
 EditorWindow::EditorWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -15,9 +21,9 @@ EditorWindow::EditorWindow(QWidget *parent)
     createActions();
     createMenus();
     createToolBars();
-//    createStatusBar();
+    createStatusBar();
 
-//    readSettings();
+    readSettings();
 }
 
 EditorWindow::~EditorWindow()
@@ -25,12 +31,18 @@ EditorWindow::~EditorWindow()
     
 }
 
+void EditorWindow::closeEvent(QCloseEvent *event)
+{
+    // writeSettings();
+    event->accept();
+}
+
 void EditorWindow::createWorld()
 {
 //    m_world = new World(QPointF(0, -9.80665), this);
     m_view = new EditorView(/*m_world,*/ this);
     setCentralWidget(m_view);
-//    connect(m_view, SIGNAL(mousePosChanged(QPointF)), this, SLOT(mousePosChanged(QPointF)));
+    connect(m_view, SIGNAL(mousePosChanged(QPointF)), this, SLOT(mousePosChanged(QPointF)));
 //    connect(m_world, SIGNAL(objectsSelected(QList<Object*>)), this, SLOT(objectsSelected(QList<Object*>)));
 }
 
@@ -169,6 +181,11 @@ void EditorWindow::toggleSimState()
 {
 }
 
+void EditorWindow::mousePosChanged(const QPointF &pos)
+{
+    statusBar()->showMessage(tr("%1, %2").arg(pos.x(), 0, 'f', 2).arg(pos.y(), 0, 'f', 2));
+}
+
 void EditorWindow::createMenus()
 {
     m_fileMenu = menuBar()->addMenu(tr("&File"));
@@ -218,4 +235,23 @@ void EditorWindow::createToolBars()
     m_toolsToolBar->addAction(m_rectToolAct);
     m_toolsToolBar->addAction(m_polygonToolAct);
     m_toolsToolBar->addAction(m_edgeToolAct);
+}
+
+void EditorWindow::createStatusBar()
+{
+    statusBar()->showMessage(tr("Ready"));
+}
+
+void EditorWindow::readSettings()
+{
+    QSettings settings;
+    restoreState(settings.value("state").toByteArray());
+    restoreGeometry(settings.value("geometry").toByteArray());
+}
+
+void EditorWindow::writeSettings()
+{
+    QSettings settings;
+    settings.setValue("state", saveState());
+    settings.setValue("geometry", saveGeometry());
 }
