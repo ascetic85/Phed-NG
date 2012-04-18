@@ -197,6 +197,47 @@ void EditorView::mouseDoubleClickEvent(QMouseEvent *event)
     }
 }
 
+void EditorView::mouseReleaseEvent(QMouseEvent *event)
+{
+    if(event->button() == Qt::LeftButton && m_tool == Select) {
+        m_world->destroyMouseJoint();
+    } else if(event->button() == Qt::MidButton) {
+        setCursor(m_lastCursor);
+    }
+}
+
+void EditorView::wheelEvent(QWheelEvent *event)
+{
+    double scaleFactor = event->delta() / 100.;
+    QSizeF oldSize(width() / m_pixelsPerMeter, height() / m_pixelsPerMeter);
+
+    if(event->delta() > 0) m_pixelsPerMeter *= scaleFactor;
+    else m_pixelsPerMeter /= -scaleFactor;
+
+    if(m_pixelsPerMeter > 500) m_pixelsPerMeter = 500;
+    else if(m_pixelsPerMeter < 10) m_pixelsPerMeter = 10;
+
+    QSizeF newSize(width() / m_pixelsPerMeter, height() / m_pixelsPerMeter);
+    QSizeF deltaSize = newSize - oldSize;
+    QPointF mousePos(event->x() / (qreal) width(), event->y() / (qreal) height()); // calc mouse pos as percent
+
+    m_viewPos.rx() -= deltaSize.width() * mousePos.x(); // anchor at mouse pos
+    m_viewPos.ry() -= deltaSize.height() * (1 - mousePos.y());
+
+    updatePM();
+}
+
+void EditorView::keyPressEvent(QKeyEvent *event)
+{
+    if(event->key() == Qt::Key_Delete) {
+        foreach(Object *qobj, m_world->selectedObjects()) {
+            if(qobj->inherits("Body")) {
+                m_world->removeObject(static_cast<Body*>(qobj));
+            }
+        }
+    }
+}
+
 void EditorView::drawCircle(GLfloat x, GLfloat y, GLfloat r)
 {
     static const double inc = M_PI / 12;

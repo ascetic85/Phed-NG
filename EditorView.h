@@ -41,7 +41,7 @@ signals:
 public slots:
     void showGrid(bool);
     void setTool(Tool tool);
-    void drawGrid();
+
 
 protected:
     // GL
@@ -51,13 +51,17 @@ protected:
 
     // Event
     void mouseMoveEvent(QMouseEvent* event);
-    void resizeEvent(QResizeEvent* event);
     void mousePressEvent(QMouseEvent *event);
     void mouseDoubleClickEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event);
+    void wheelEvent(QWheelEvent* event);
+    void keyPressEvent(QKeyEvent* event);
+    void resizeEvent(QResizeEvent* event);
 
     // Draw
     void drawCircle(GLfloat x, GLfloat y, GLfloat r);
     void closePoly();
+    void drawGrid();
 
 private:
     Tool m_tool;
