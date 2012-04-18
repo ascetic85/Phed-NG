@@ -8,6 +8,13 @@
 #include <QStyle>
 #include <QCloseEvent>
 #include <QSettings>
+#include <QDebug>
+#include <Box2D/Common/b2Settings.h>
+
+#include "EditorView.h"
+#include "PropertyBrowser.h"
+#include "Body.h"
+
 
 EditorWindow::EditorWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -28,22 +35,34 @@ EditorWindow::EditorWindow(QWidget *parent)
 
 EditorWindow::~EditorWindow()
 {
-    
 }
 
 void EditorWindow::closeEvent(QCloseEvent *event)
 {
-    // writeSettings();
+    writeSettings();
     event->accept();
+}
+
+void EditorWindow::updateSimAct()
+{
+    if(m_world->simulating()) {
+        m_simStateAct->setIcon(m_pauseIcon);
+        m_simStateAct->setText(m_pauseText);
+        m_simStateAct->setStatusTip(m_pauseStatusTip);
+    } else {
+        m_simStateAct->setIcon(m_playIcon);
+        m_simStateAct->setText(m_playText);
+        m_simStateAct->setStatusTip(m_playStatusTip);
+    }
 }
 
 void EditorWindow::createWorld()
 {
-//    m_world = new World(QPointF(0, -9.80665), this);
-    m_view = new EditorView(/*m_world,*/ this);
+    m_world = new World(QPointF(0, -9.80665), this);
+    m_view = new EditorView(m_world, this);
     setCentralWidget(m_view);
     connect(m_view, SIGNAL(mousePosChanged(QPointF)), this, SLOT(mousePosChanged(QPointF)));
-//    connect(m_world, SIGNAL(objectsSelected(QList<Object*>)), this, SLOT(objectsSelected(QList<Object*>)));
+    connect(m_world, SIGNAL(objectsSelected(QList<Object*>)), this, SLOT(objectsSelected(QList<Object*>)));
 }
 
 void EditorWindow::createDockWindows() {
@@ -51,8 +70,8 @@ void EditorWindow::createDockWindows() {
     m_propertyBrowserDock->setObjectName("PropertiesDock");
     m_propertyBrowserDock->setWindowTitle("Properties");
     m_propertyBrowserDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-//    m_propertyBrowser = new PropertyBrowser(m_propertyBrowserDock);
-//    m_propertyBrowserDock->setWidget(m_propertyBrowser);
+    m_propertyBrowser = new PropertyBrowser(m_propertyBrowserDock);
+    m_propertyBrowserDock->setWidget(m_propertyBrowser);
     addDockWidget(Qt::RightDockWidgetArea, m_propertyBrowserDock);
 }
 
@@ -143,7 +162,7 @@ void EditorWindow::createActions()
 
     m_simStateAct = new QAction(this);
     m_simStateAct->setShortcut(Qt::Key_Space);
-//    updateSimAct();
+    updateSimAct();
     connect(m_simStateAct, SIGNAL(triggered()), this, SLOT(toggleSimState()));
 
     m_propertyBrowserDock->toggleViewAction()->setText("&Properties");
@@ -151,39 +170,96 @@ void EditorWindow::createActions()
 
 void EditorWindow::newFile()
 {
+    m_world->reset();
 }
 
 void EditorWindow::open()
 {
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Save Map"), "maps",
+        tr("Phed Map (*.pdm);;All Files (*)"));
+
+    if(fileName.isEmpty())
+        return;
+
+    QFile file(fileName);
+    if(!file.open(QIODevice::ReadOnly)) {
+        QMessageBox::information(this, tr("Unable to open file"),
+            file.errorString());
+        return;
+    }
+
+    QDataStream in(&file);
+    m_world->reset();
+    while(!in.atEnd()) {
+        Body *body = new Body(m_world);
+        in >> *body;
+        m_world->addBody(body);
+    }
 }
 
-void EditorWindow::save()
+bool EditorWindow::save()
 {
+    QMessageBox::information(this, "Not implemented", "This function has not been implemented.");
+    return false;
 }
 
-void EditorWindow::saveAs()
+bool EditorWindow::saveAs()
 {
-}
+    QString fileName = QFileDialog::getSaveFileName(this,
+        tr("Save Map"), "maps",
+        tr("Phed Map (*.pdm);;All Files (*)"));
 
-void EditorWindow::close()
-{
+    if (fileName.isEmpty())
+        return false;
+
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::WriteOnly)) {
+        QMessageBox::information(this, tr("Unable to open file"),
+            file.errorString());
+        return false;
+    }
+
+    QDataStream out(&file);
+    foreach(Body *body, m_world->bodies()) {
+        out << *body;
+    }
+    return true;
 }
 
 void EditorWindow::about()
 {
+    QString b2_ver_str = tr("%1.%2.%3").arg(b2_version.major).arg(b2_version.minor).arg(b2_version.revision);
+    QMessageBox::about(this, "About", "<b>Phed-NG</b> is an open source cross-"
+            "platform map editor with a built-in physics simulator, written in "
+            "C++ base on <b>Phed</b> which developed by Mark Bayazit. "
+            "It uses Qt (Nokia) for the GUI, and Box2D (Erin Catto) for "
+            "physics. It is being developed by ascetic85."
+            "<br/><br/>"
+            "<b>Qt version:</b> "+tr(QT_VERSION_STR)+"<br/>"
+            "<b>Box2D version:</b> "+b2_ver_str);
 }
 
-void EditorWindow::toolSelected(QAction*)
+void EditorWindow::toolSelected(QAction *act)
 {
+    m_view->setTool((EditorView::Tool)act->property("tool").toInt());
 }
 
 void EditorWindow::toggleSimState()
 {
+    m_world->setSimulating(!m_world->simulating());
+    updateSimAct();
 }
 
 void EditorWindow::mousePosChanged(const QPointF &pos)
 {
     statusBar()->showMessage(tr("%1, %2").arg(pos.x(), 0, 'f', 2).arg(pos.y(), 0, 'f', 2));
+}
+
+void EditorWindow::objectsSelected(const QList<Object *> &objs)
+{
+    m_propertyBrowser->setSelectedObjects(objs);
 }
 
 void EditorWindow::createMenus()
@@ -247,6 +323,8 @@ void EditorWindow::readSettings()
     QSettings settings;
     restoreState(settings.value("state").toByteArray());
     restoreGeometry(settings.value("geometry").toByteArray());
+
+    qDebug() << settings.fileName();
 }
 
 void EditorWindow::writeSettings()

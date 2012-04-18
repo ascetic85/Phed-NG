@@ -3,7 +3,12 @@
  */
 #include <QtGui/QApplication>
 #include <QDateTime>
+
 #include "EditorWindow.h"
+#include "Rect.h"
+#include "Circle.h"
+#include "Polygon.h"
+#include "point.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,6 +19,15 @@ int main(int argc, char *argv[])
     qsrand(QDateTime::currentDateTime().toTime_t());
 
     QApplication a(argc, argv);
+
+    qRegisterMetaType<Rect>("Rect");
+    qRegisterMetaType<Circle>("Circle");
+    qRegisterMetaType<BPolygon>("BPolygon");
+    qRegisterMetaType<Point>("Point");
+    qRegisterMetaType<PolygonList>("PolygonList");
+    qRegisterMetaTypeStreamOperators<PolygonList>("PolygonList");
+
+
     EditorWindow w;
     w.show();
     

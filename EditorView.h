@@ -11,6 +11,8 @@
 #include <QMouseEvent>
 #include <QResizeEvent>
 
+#include "World.h"
+
 class EditorView : public QGLWidget
 {
     Q_OBJECT
@@ -21,7 +23,7 @@ public:
         RevoluteJoint, PulleyJoint, PrismaticJoint, LineJoint, GearJoint
     };
 
-    explicit EditorView(QWidget *parent = 0);
+    explicit EditorView(World *world, QWidget *parent = 0);
 
     QPointF mapToWorld(QPoint pos) const;
     
@@ -51,7 +53,7 @@ protected:
 
 private:
     Tool m_tool;
-//    World *m_world;
+    World *m_world;
     QPointF m_lastMousePos;
     QPointF m_mousePos;
     QPointF m_viewPos;

@@ -3,12 +3,21 @@
  */
 #include "EditorView.h"
 #include "point.h"
+#include "Body.h"
 
-EditorView::EditorView(QWidget *parent)
+EditorView::EditorView(World *world, QWidget *parent)
     : QGLWidget(QGLFormat(QGL::DoubleBuffer), parent)
+    , m_world(world)
     , m_pixelsPerMeter(50)
     , m_showGrid(true)
+    , m_drawFPS(60)
+    , m_closePolyDist(7.5)
 {
+    setMouseTracking(true);
+    m_redrawTimer.start(1000 / m_drawFPS);
+    connect(&m_redrawTimer, SIGNAL(timeout()), this, SLOT(updateGL()));
+    setFocus(); // accept keyboard events
+    setFocusPolicy(Qt::ClickFocus);
 }
 
 QPointF EditorView::mapToWorld(QPoint pos) const
@@ -39,48 +48,48 @@ void EditorView::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
-//    foreach(Body *obj, m_world->bodies()) { // TODO: query the world for visible objects first!
-//        obj->paintGL();
-//    }
+    foreach(Body *obj, m_world->bodies()) { // TODO: query the world for visible objects first!
+        obj->paintGL();
+    }
 
-//    if(m_tmpPoly.size() >= 1) {
-//        glLineWidth(1.5);
-//        glColor3ub(m_tmpColor.red(), m_tmpColor.green(), m_tmpColor.blue());
-//        if(m_tmpPoly.size() >= 2) {
-//            glBegin(GL_LINE_STRIP);
-//            foreach(QPointF vert, m_tmpPoly) {
-//                glVertex2f(vert.x(), vert.y());
-//            }
-//            glEnd();
+    if(m_tmpPoly.size() >= 1) {
+        glLineWidth(1.5);
+        glColor3ub(m_tmpColor.red(), m_tmpColor.green(), m_tmpColor.blue());
+        if(m_tmpPoly.size() >= 2) {
+            glBegin(GL_LINE_STRIP);
+            foreach(QPointF vert, m_tmpPoly) {
+                glVertex2f(vert.x(), vert.y());
+            }
+            glEnd();
 
-//        }
-//        glEnable(GL_LINE_STIPPLE);
-//        glBegin(GL_LINES);
-//        {
-//            glVertex2f(m_tmpPoly.last().x(), m_tmpPoly.last().y());
-//            glVertex2f(m_mousePos.x(), m_mousePos.y());
-//        }
-//        glEnd();
-//        glDisable(GL_LINE_STIPPLE);
+        }
+        glEnable(GL_LINE_STIPPLE);
+        glBegin(GL_LINES);
+        {
+            glVertex2f(m_tmpPoly.last().x(), m_tmpPoly.last().y());
+            glVertex2f(m_mousePos.x(), m_mousePos.y());
+        }
+        glEnd();
+        glDisable(GL_LINE_STIPPLE);
 
-//        if(m_readyClosePoly) {
-//            glColor3ub(255, 255, 255);
-//            drawCircle(m_tmpPoly.first().x(), m_tmpPoly.first().y(), m_closePolyDist / m_pixelsPerMeter);
-//        }
-//    }
+        if(m_readyClosePoly) {
+            glColor3ub(255, 255, 255);
+            drawCircle(m_tmpPoly.first().x(), m_tmpPoly.first().y(), m_closePolyDist / m_pixelsPerMeter);
+        }
+    }
 
-//    if(m_world->mouseJoint() != NULL) {
-//        glLineWidth(1.5);
-//        glColor3ub(64,128,255);
-//        glBegin(GL_LINES);
-//        {
-//            glVertex2f(m_world->mouseJoint()->GetAnchorB().x, m_world->mouseJoint()->GetAnchorB().y);
-//            glVertex2f(m_mousePos.x(), m_mousePos.y());
-//        }
-//        glEnd();
-//    }
+    if(m_world->mouseJoint() != NULL) {
+        glLineWidth(1.5);
+        glColor3ub(64,128,255);
+        glBegin(GL_LINES);
+        {
+            glVertex2f(m_world->mouseJoint()->GetAnchorB().x, m_world->mouseJoint()->GetAnchorB().y);
+            glVertex2f(m_mousePos.x(), m_mousePos.y());
+        }
+        glEnd();
+    }
 
-        if(m_showGrid) drawGrid();
+    if(m_showGrid) drawGrid();
 }
 
 void EditorView::updatePM()
@@ -99,15 +108,15 @@ void EditorView::mouseMoveEvent(QMouseEvent *event)
 
     Point mouseDiff = m_mousePos - m_lastMousePos;
     if(m_tool == Select && event->buttons() & Qt::LeftButton) {
-//        if(m_world->mouseJoint() == NULL) {
-//            foreach(Object *obj, m_world->selectedObjects()) {
-//                if(obj->inherits("Body")) {
-//                    static_cast<Body*>(obj)->translate(mouseDiff);
-//                }
-//            }
-//        } else {
-//            m_world->updateMouseJoint(m_mousePos);
-//        }
+        if(m_world->mouseJoint() == NULL) {
+            foreach(Object *obj, m_world->selectedObjects()) {
+                if(obj->inherits("Body")) {
+                    static_cast<Body*>(obj)->translate(mouseDiff);
+                }
+            }
+        } else {
+            m_world->updateMouseJoint(m_mousePos);
+        }
     }
     if(event->buttons() & Qt::MidButton) {
         m_viewPos -= mouseDiff;
@@ -135,25 +144,25 @@ void EditorView::mousePressEvent(QMouseEvent *event)
         case Qt::LeftButton:
             switch(m_tool) {
                 case Select:
-//                    m_world->setSelectedObjects(m_world->query(mousePos));
-//                    if(m_world->simulating() && !m_world->selectedObjects().isEmpty()) {
-//                        if(m_world->selectedObjects().first()->inherits("Body")) {
-//                            m_world->addMouseJoint((Body*)m_world->selectedObjects().first(), mousePos);
-//                        }
-//                    }
+                    m_world->setSelectedObjects(m_world->query(mousePos));
+                    if(m_world->simulating() && !m_world->selectedObjects().isEmpty()) {
+                        if(m_world->selectedObjects().first()->inherits("Body")) {
+                            m_world->addMouseJoint((Body*)m_world->selectedObjects().first(), mousePos);
+                        }
+                    }
                     break;
 
                 case Polygon:
-//                    if(m_readyClosePoly) {
-//                        closePoly();
-//                    } else {
-//                        if(m_tmpPoly.isEmpty()) {
-//                            m_tmpColor.setHsv(qrand()%360, qrand()%192+64, qrand()%64+192);
-//                            m_tmpPoly.append(mousePos);
-//                        } else if(mousePos != m_tmpPoly.last()) {
-//                            m_tmpPoly.append(mousePos);
-//                        }
-//                    }
+                    if(m_readyClosePoly) {
+                        closePoly();
+                    } else {
+                        if(m_tmpPoly.isEmpty()) {
+                            m_tmpColor.setHsv(qrand()%360, qrand()%192+64, qrand()%64+192);
+                            m_tmpPoly.append(mousePos);
+                        } else if(mousePos != m_tmpPoly.last()) {
+                            m_tmpPoly.append(mousePos);
+                        }
+                    }
                     break;
                 default:
                     break;
@@ -193,14 +202,14 @@ void EditorView::drawCircle(GLfloat x, GLfloat y, GLfloat r)
 
 void EditorView::closePoly()
 {
-//    Body *body = new Body(m_world);
-//    body->addPolygon(m_tmpPoly);
-//    body->setColor(m_tmpColor);
-//    m_world->addBody(body);
+    Body *body = new Body(m_world);
+    body->addPolygon(m_tmpPoly);
+    body->setColor(m_tmpColor);
+    m_world->addBody(body);
     m_tmpPoly.clear();
 
-//    QSet<Body*> qobjs;
-//    qobjs.insert(body);
+    QSet<Body*> qobjs;
+    qobjs.insert(body);
 //    m_world->setSelectedObjects(qobjs);
 }
 

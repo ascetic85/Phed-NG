@@ -9,7 +9,12 @@
 #include <QMenuBar>
 #include <QToolBar>
 
-#include "EditorView.h"
+
+#include "Object.h"
+#include "World.h"
+
+class EditorView;
+class PropertyBrowser;
 
 class EditorWindow : public QMainWindow
 {
@@ -23,19 +28,21 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *event);
+    void updateSimAct();
 
 private slots:
     void newFile();
     void open();
-    void save();
-    void saveAs();
-    void close();
-
+    bool save();
+    bool saveAs();
     void about();
+
+//    void mapWasModified();
     void toolSelected(QAction*);
     void toggleSimState();
 
     void mousePosChanged(const QPointF &);
+    void objectsSelected(const QList<Object*>&);
 
 private:
     void createWorld();
@@ -88,9 +95,10 @@ private:
     QAction *m_edgeToolAct;
 
 
+    World *m_world;
     EditorView *m_view;
     QDockWidget *m_propertyBrowserDock;
-//    PropertyBrowser *m_propertyBrowser;
+    PropertyBrowser *m_propertyBrowser;
 };
 
 #endif // MAINWINDOW_H
