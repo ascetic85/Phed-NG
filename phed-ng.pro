@@ -10,7 +10,7 @@ TARGET = phed-ng
 TEMPLATE = app
 
 INCLUDEPATH += Box2d
-LIBS += -lQtSolutions_PropertyBrowser-headd
+#LIBS += -lQtSolutions_PropertyBrowser-headd
 
 include(Box2d/box2d.pri)
 include(qtpropertybrowser/qtpropertybrowser.pri)
